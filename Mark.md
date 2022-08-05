@@ -59,3 +59,18 @@
 * `git merge ИмяВетки` - добавление ветки с указанными названием к открытой ветке
 
 * `git branch -d ИмяВетки` - удаление ветки с введенным названием
+<<<<<<< HEAD
+=======
+
+*   * `git remote add origin https://github.com/BR0M1CH/GeekBrains.git`
+
+    * `git branch -M main`
+
+    * `git push -u origin main` - набор команд для выгрузки кода на гитхаб
+
+* `git commit -am "..."` - объединение `add` и `commit`
+
+* `git reflog` - полные логи действий
+
+* `git clone https://...` - выгрузка кода в приложение 
+>>>>>>> GIT
