@@ -16,7 +16,7 @@ def finder_a():  # Функция поиска коэффициента "а"
         a = int(1)
         while mas[0] != "+" or mas[0] != "-" or mas[0] != "-":
             mas.pop(0)
-            if mas[0] == "+" or mas[0] == "-" or mas[0] != "=":
+            if mas[0] == "+" or mas[0] == "-" or mas[0] == "=":
                 break
     else:
         oper = 0
