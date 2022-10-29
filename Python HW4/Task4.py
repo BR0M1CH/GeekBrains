@@ -1,139 +1,265 @@
-def reader():  # Функция ввода с проверкой
-    global mas
-    try:
-        print("Введите квадратное уравнение без знаков умножения:", end="")  # Простая проверка ввода на присутсвие степени в строке
-        mas = [i for i in (str(input()))]
-        mas.index("^")
-    except:
-        print("Уравнение не квадратное")
-        reader()
-    return (mas)
+import json
 
 
-def finder_a():  # Функция поиска коэффициента "а"
-    global mas
-    if mas[0] == "x":  # Если первый символ списка - "х", то коэф. "а" равен единице
-        a = int(1)
-        while mas[0] != "+" or mas[0] != "-" or mas[0] != "-":
-            mas.pop(0)
-            if mas[0] == "+" or mas[0] == "-" or mas[0] == "=":
-                break
+Garage = {"Mazda": {"Rx7": {"Двигатель": "Сток", "Коробка передач": "Сток",
+                            "Шины": "Сток", "Нитро": "Нет", "Турбонаддув": "Нет"}}}
+Helper = {"Сток": int(1), "Спорт": int(2), "Про": int(3), "Элита": int(
+    4), "Нет": int(0), "Да": int(1), "TwinTurbo": int(2), "BiTurbo": int(1)}
+Info = {"/spec": "Показывает х-ки конкретного авто", "/tune": "Прокачка одного параметра авто", "/add": "Добавить машину",
+        "/remove": "Удалить машину", "/exit": "Завершить работу программы", "/dino":"Прогоняем машину на диностенде", "/load":"Загружаем данные из файла", "/save":"Загружаем данные в файл"}
+
+
+def get_key(d: dict, value):    #Возвращает ключ от значения 
+    for k, v in d.items():
+        if v == value:
+            return str(k)
+
+
+def saver():
+    global Garage
+    with open ("Cars.json", "w", encoding="utf-8") as car:
+        car.write(json.dumps(Garage, ensure_ascii=False))
+    print("Гараж сохранён!")
+
+   
+def loader():
+    global Garage
+    with open("Cars.json", "r", encoding="utf-8") as car:
+        Garage = json.load(car)
+    print("Гараж обновлен!")
+
+
+def Mark():        #Проверка ввода существующей марки
+    global Garage
+    helpmas = get_mark()
+    while True:
+        try:
+            n = input(f"Марки, которые есть у вас в гараже: {helpmas}\nКакую марку смотрим?: ")
+            if n not in Garage:
+                raise Exception
+        except:
+            print("Такой марки в гараже нет, попробуем еще раз")
+        else:
+            return (n)
+
+
+def get_model():     #Геттер -  на выходе выдает массив со всеми моделями в рамках конкретной марки
+    global Garage
+    helpmas = []
+    for item in Garage[n].values():
+        helpmas.append(get_key(Garage[n], item))
+    return (helpmas)
+
+
+def get_mark():      #Геттер - на выходе выдает массив со всеми марками в гараже
+    global Garage
+    helpmas = []
+    for item in Garage.values():
+        helpmas.append(get_key(Garage, item))
+    return (helpmas)
+
+
+def Model():         #Проверка ввода существуей модели
+    global Garage, n
+    helpmas = get_model()
+    while True:
+        try:
+            m = input(
+                f"Модели марки {n}, которые есть у вас в гараже: {helpmas}\nКакую модель смотрим?: ")
+            if m not in Garage[n]:
+                raise Exception
+        except:
+            print("Такой модели у такой марки нет, попробуем еще раз")
+        else:
+            return (m)
+
+
+def spec():          #На выходе массив с характеристиками конкретной модели
+    global n, m, Garage
+    helpmas = []
+    if Garage == {}:
+        print("Ваш гараж пустой")
     else:
-        oper = 0
-        a = str("")
-        try:
-            int(mas[0])   # Пробуем преобразовать первый символ строки в инт: если преобразовалось, значит на первом месте - цифра, значит знака минус нет
-            oper = 0
-        except:  # А если не получилось - значит там знак минус, меняем оператор и удаляем этот минус
-            oper = 1
-            mas.pop(0)
-        for i in range(mas.index("^")-1):   # Считываем все символы до "х", добавляем их в строку Б, затем конвертируем её в целое
-            a += mas[i]
-        try:
-            if oper == 0:
-                a = int(a)
-            else:
-                a = int(0-int(a))
-        except: # На случай непредвиденных обстоятельств
-            print("Ошибка конвертации а")
-        while mas[0] != "+" or mas[0] != "-" or mas[0] != "=":     # Подчищаем наш список вплоть до оператора перед икс или перед целым числом
-            mas.pop(0)
-            if mas[0] == "+" or mas[0] == "-" or mas[0] == "=":
-                break
-    return (a)
+        n = Mark()
+        m = Model()
+        for k, v in Garage[n][m].items():
+            helpmas.append(f"{k} - {v}")
+    return (helpmas)
 
 
-def finder_b():  # Функция поиска коэффициента "b"
-    global mas
-    b = str("")
-    try:
-        # Проверяем есть ли вообще в строке икс, если его нет - значит коэф Б = 0
-        mas.index("x")
-        if mas[0] == "+":  # Смотрим на знак и меняем оператор в зависимости от знака
-            oper = 0
-        else:
-            oper = 1
-            mas.pop(0)
-        for i in range(mas.index("x")):  # Дальше все по аналогии с А
-            b += mas[i]
+def spec_change_input_key():   #Проверка ввода характеристики авто
+    global Garage, n, m
+    while True:
         try:
-            if oper == 0:
-                b = int(b)
-            else:
-                b = int(0-int(b))
+            l = input("Какой параметр меняем? \n")
+            if l not in Garage[n][m]:
+                raise Exception
         except:
-            print("Ошибка конвертации B")
-        while mas[0] != "+" or mas[0] != "-" or mas[0] != "=": # В условие добавился знак равно - на случай, если нулевой степени в строке нет
-            mas.pop(0)
-            if mas[0] == "+" or mas[0] == "-" or mas[0] == "=":
-                break
-    except:
-        b = 0
-    return (b)
-
-
-def finder_c():  # Функция поиска коэффициента "с"
-    global mas
-    c = str("")
-    try:
-        mas[0] != "="   # Если в начале строки стоит знак равно, значит нулевого коэф. нет
-        if mas[0] == "+":  # Все по аналогии с а и б
-            oper = 0
+            print(f"Такой характеристики у {n}{m} нет, попробуем еще раз")
         else:
-            oper = 1
-            mas.pop(0)
-        for i in range(mas.index("=")):
-            c += mas[i]
+            return (l)
+
+
+def spec_change():    #Функция для смены конкретной характеристики авто        
+    global Garage, n, m, l
+    while True:
         try:
-            if oper == 0:
-                c = int(c)
+            if l == "Двигатель" or l == "Коробка передач" or l == "Шины":          #Проверка ввода для группы с множестовом "уровней"
+                print("Вы можете поставить 4 разных уровня: Сток, Спорт, Про и Элита")
+                s = input("Какой уровень ставим? ")
+                if s != "Сток" and s != "Спорт" and s != "Про" and s != "Элита":
+                    raise ValueError
+                else:
+                    Garage[n][m][l] = s
+            elif l == "Нитро":                                                    #Проверка ввода для нитро, где либо да, либо нет
+                print(
+                    "Вы можете либо поставить, либо убрать нитро, впишите либо Да либо Нет")
+                s = input("Какой уровень ставим? ")
+                if s != "Да" and s != "Нет":
+                    raise ValueError
+                else:
+                    Garage[n][m][l] = s
+            elif l == "Турбонаддув":       #Проверка ввода для турбины, где три варианта
+                print(
+                    "Вы можете поставить TwinTurbo или BiTurbo, так же вы можете убрать турбину, для этого напишите Нет")
+                s = input("Какой уровень ставим? ")
+                if s != "Нет" and s != "TwinTurbo" and s != "BiTurbo":
+                    raise ValueError
+                else:
+                    Garage[n][m][l] = s
+        except ValueError:               
+            print(
+                f"Такая характеристика не свойственна для параметра {l}, попробуем еще раз")
+        else:
+            print(f"Теперь у машины такие параметры:")
+            for k, v in Garage[n][m].items():
+                print(f"{k} - {v}")
+            break
+
+
+def adder():          #Функция добавления марки или модели в гараж
+    global Garage, n, m
+    helpmas = []
+    while True:
+        n = input("Хотите добавить авто в существующую марку? ")
+        try:
+            if n == "Да":
+                n = Mark()
+                while True:
+                    try:
+                        m = input("Введите название модели: ")
+                        if m in Garage[n]:
+                            raise ValueError
+                        break
+                    except:
+                        print("Такая модель уже есть, попробуем еще раз")
+                Garage[n][m] = {"Двигатель": "Сток", "Коробка передач": "Сток",
+                                "Шины": "Сток", "Нитро": "Нет", "Турбонаддув": "Нет"}
+                break
+            elif n == "Нет":
+                while True:
+                    try:
+                        n = input("Введите название новой марки: ")
+                        if n in Garage:
+                            raise ValueError
+                        break
+                    except:
+                        print("Такая марка уже есть, попробуем еще раз")
+                Garage[n] = {}
+                while True:
+                    try:
+                        m = input("Введите название модели: ")
+                        if m in Garage[n]:
+                            raise ValueError
+                        break
+                    except:
+                        print("Такая модель уже есть, попробуем еще раз")
+                Garage[n][m] = {"Двигатель": "Сток", "Коробка передач": "Сток",                   #Создаем модель со стоковыми характеристиками
+                                "Шины": "Сток", "Нитро": "Нет", "Турбонаддув": "Нет"}
+                break
             else:
-                c = int(0-int(c))
+                raise ValueError
+        except ValueError:
+            print("Не понял команды, попробуем еще раз")
+    for k, v in Garage[n][m].items():
+        helpmas.append(f"{k} - {v}")
+    return (helpmas)
+
+
+def remover():        #Удаление марки или модели из гаража
+    global Garage, n, m
+    helpmas = get_mark()
+    while True:
+        try:
+            n = input(
+                "Вы хотите продать все модели бренда или только модель? Напишите Все или Модель")
+            if n == "Все":
+                n = Mark()
+                del Garage[n]
+                break
+            elif n == "Модель":
+                n = Mark()
+                m = Model()
+                del Garage[n][m]
+                break
+            else:
+                raise Exception
         except:
-            print("Ошибка конвертации C")
-    except:
-        c = 0
-    return (c)
+            print("Не разобрал команды, попробуем еще раз")
 
 
-def Discriminant_Plus(a, b, D):   # Тут все просто, считаем иксы, если дискриминант положительный
-    x1 = (int(0-b)+D**0.5)/(2*a)
-    x1 = round(x1, 2)
-    x2 = (int(0-b)+D**0.5)/(2*a)
-    x2 = round(x2, 2)
-    if x1 == 0:
-        x1 = int(0)
-    if x2 == 0:
-        x2 = int(0)
-    return x1, x2
+def Dino():           #Калькулятор лошадиных сил и разгона 0-100 у машины в зависимости от ее характеристик
+    global Garage, n, m, Helper
+    n = Mark()
+    m = Model()
+    HP = int(100*(Helper[Garage[n][m]["Двигатель"]]) +
+             50*(Helper[Garage[n][m]["Турбонаддув"]]))
+    Acceleraion = int(int(20)-(HP // int(100))-2 *
+                      (Helper[Garage[n][m]["Шины"]])-(Helper[Garage[n][m]["Коробка передач"]]))
+    print(f"У {n} {m} {HP} лошадиных сил, разгон до 100 км/ч = {Acceleraion}с")
+    return
+
+print("Привет, я твой гид по гаражу, прокачивай тачки и попадешь в гоночную элиту Сан-Андреаса!\nВведи /help, чтобы узнать мои функции")
+while True:
+    command = input("Введите команду: ")
+
+    if command == "/spec":
+        helpmas = spec()
+        for i in helpmas:
+            print(i)
+
+    elif command == "/tune":
+        for i in spec():
+            print(i)
+        l = spec_change_input_key()
+        spec_change()
+
+    elif command == "/exit":
+        print("Залетай к нам в гараж ещё!")
+        break
+
+    elif command == "/add":
+        helpmas = adder()
+        for i in helpmas:
+            print(i)
+
+    elif command == "/info":
+        for k, v in Info.items():
+            print(f"{k} - {v}")
+        print("Ответы на вопросы бота писать с большой буквы, я забыл про уменьшение шрифта")
+
+    elif command == "/remove":
+        remover()
+
+    elif command == "/dino":
+        Dino()
 
 
-def Discriminant_Minus(a, b, D):  # Считаем комплексные иксы с отрицательным дискриминантом
-    print("В целых числа решения нет, но могу предложить в мнимых:")
-    D = complex(D**0.5)
-    x1 = complex((int(0-b)+D)/(2*a))
-    x1 = complex(round(x1.real, 2), round(x1.imag, 2))
-    x2 = complex((int(0-b)-D)/(2*a))
-    x2 = complex(round(x2.real, 2), round(x2.imag, 2))
-    return x1, x2
+    elif command == "/load":
+        loader()
 
+    elif command == "/save":
+        saver()
 
-def D_Calc(defa, defb, defc):  # На вход принимаем три функции поиска коэффициентов, считаем дискриминант и смотрим какую дальше функцию использовать
-    a = defa()
-    print(a)
-    b = defb()
-    print(b)
-    c = defc()
-    print(c)
-    D = (int(b**2) - int(4*a*c))
-    try:
-        D >= 0
-        x1, x2 = Discriminant_Plus(a, b, D)
-    except:
-        x1, x2 = Discriminant_Minus(a, b, D)
-    return (x1, x2)
-
-
-reader()
-x1, x2 = D_Calc(finder_a, finder_b, finder_c)
-print(f"x1 = {x1} \nx2 = {x2}")
+    else:
+        print("Прочитайте инструкцию с помощью команды: /info")
